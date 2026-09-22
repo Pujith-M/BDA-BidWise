@@ -1,20 +1,83 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { ArrowRight, Calculator, Check, CircleHelp, IndianRupee, RotateCcw, Ruler, ShieldCheck } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { ArrowRight, Calculator, Check, CircleHelp, IndianRupee, Minus, Plus, RotateCcw, Ruler, Save, ShieldCheck, Trash2 } from 'lucide-react'
 
-const SQM_TO_SQFT = 10.7639
 const formatINR = (value: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value || 0)
 const formatNumber = (value: number, digits = 2) => new Intl.NumberFormat('en-IN', { maximumFractionDigits: digits }).format(value || 0)
+const SQFT_PER_SQM = 10.7639
+const SAVED_CONFIGS_KEY = 'bidwise-saved-configurations'
+
+type SavedConfiguration = {
+  id: string
+  name: string
+  price: string
+  area: string
+}
 
 export default function Page() {
-  const [price, setPrice] = useState('50000')
-  const [area, setArea] = useState('100')
+  const [price, setPrice] = useState('70000')
+  const [area, setArea] = useState('216')
+  const [savedConfigurations, setSavedConfigurations] = useState<SavedConfiguration[]>([])
+  const [activeConfigurationId, setActiveConfigurationId] = useState('')
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(SAVED_CONFIGS_KEY)
+      if (!stored) return
+      const parsed = JSON.parse(stored) as SavedConfiguration[]
+      if (Array.isArray(parsed)) setSavedConfigurations(parsed)
+    } catch {
+      window.localStorage.removeItem(SAVED_CONFIGS_KEY)
+    }
+  }, [])
+
+  const persistConfigurations = (configurations: SavedConfiguration[]) => {
+    setSavedConfigurations(configurations)
+    window.localStorage.setItem(SAVED_CONFIGS_KEY, JSON.stringify(configurations))
+  }
+
+  const saveConfiguration = () => {
+    const name = window.prompt('Name this site configuration')?.trim()
+    if (!name) return
+
+    const existing = savedConfigurations.find(configuration => configuration.name.toLowerCase() === name.toLowerCase())
+    const configuration: SavedConfiguration = {
+      id: existing?.id ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      name,
+      price,
+      area,
+    }
+    const nextConfigurations = existing
+      ? savedConfigurations.map(item => item.id === existing.id ? configuration : item)
+      : [...savedConfigurations, configuration]
+
+    persistConfigurations(nextConfigurations)
+    setActiveConfigurationId(configuration.id)
+  }
+
+  const loadConfiguration = (id: string) => {
+    const configuration = savedConfigurations.find(item => item.id === id)
+    if (!configuration) return
+    setPrice(configuration.price)
+    setArea(configuration.area)
+    setActiveConfigurationId(id)
+  }
+
+  const deleteConfiguration = () => {
+    if (!activeConfigurationId) return
+    const configuration = savedConfigurations.find(item => item.id === activeConfigurationId)
+    if (!configuration || !window.confirm(`Delete “${configuration.name}”?`)) return
+    persistConfigurations(savedConfigurations.filter(item => item.id !== activeConfigurationId))
+    setActiveConfigurationId('')
+  }
   const result = useMemo(() => {
     const pricePerSqm = Math.max(0, Number(price) || 0)
     const areaSqm = Math.max(0, Number(area) || 0)
+    const areaSqft = areaSqm * SQFT_PER_SQM
+    const pricePerSqft = pricePerSqm / SQFT_PER_SQM
     const total = pricePerSqm * areaSqm
-    const incomeTaxTds = total > 5000000 ? total * 0.01 : 0
+    const incomeTaxTds = total * 0.01
     const stampDuty = total * 0.05
     const registrationFee = total * 0.02
     const urbanCess = stampDuty * 0.1
@@ -24,8 +87,8 @@ export default function Page() {
     const registrationCharges = incomeTaxTds + stampDuty + registrationFee + urbanCess + urbanSurcharge + khataTransfer
     const additionalCharges = registrationCharges + hiddenCosts
     return {
-      areaSqft: areaSqm * SQM_TO_SQFT,
-      pricePerSqft: pricePerSqm / SQM_TO_SQFT,
+      areaSqft,
+      pricePerSqft,
       total,
       upfront: total * 0.25,
       incomeTaxTds,
@@ -41,14 +104,14 @@ export default function Page() {
     }
   }, [price, area])
 
-  const reset = () => { setPrice('50000'); setArea('100') }
+  const reset = () => { setPrice('70000'); setArea('216') }
 
   return (
-    <main className="min-h-screen bg-[#f5f7fb] text-slate-950">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,_#fff4e8_0,_transparent_34%),linear-gradient(135deg,_#f5f7fb_0%,_#eef5f4_100%)] text-slate-950">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 lg:px-8">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-[#103c52] text-white shadow-sm"><Calculator size={20} /></div>
+            <div className="relative flex size-10 items-center justify-center rounded-xl bg-[#103c52] text-white shadow-[0_8px_18px_rgba(16,60,82,0.2)]"><Calculator size={20} /><span className="absolute -right-1 -top-1 size-2.5 rounded-full bg-[#e68a4a] ring-2 ring-white" /></div>
             <div><p className="text-[15px] font-bold tracking-tight">BDA BidWise</p><p className="text-xs text-slate-500">Auction cost calculator</p></div>
           </div>
           <button onClick={reset} className="flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-[#103c52]"><RotateCcw size={15} /> Reset</button>
@@ -56,20 +119,25 @@ export default function Page() {
       </header>
 
       <div className="mx-auto max-w-6xl px-5 py-10 lg:px-8 lg:py-14">
-        <div className="mb-10 max-w-2xl"><div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#dff3ee] px-3 py-1.5 text-xs font-semibold text-[#12604f]"><ShieldCheck size={14} /> Plan your bid with confidence</div><h1 className="text-4xl font-bold tracking-[-0.04em] text-[#103c52] sm:text-5xl">Know your true site cost<br /><span className="text-[#e68a4a]">before you bid.</span></h1><p className="mt-4 text-base leading-7 text-slate-600">Estimate the total site value, 25% upfront payment, and registration charges in seconds.</p></div>
+        <div className="mb-10 max-w-2xl"><div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#bfe2d8] bg-white/75 px-3 py-1.5 text-xs font-semibold text-[#12604f] shadow-sm"><ShieldCheck size={14} /> Plan your bid with confidence</div><h1 className="text-4xl font-bold tracking-[-0.04em] text-[#103c52] sm:text-5xl">Know your true site cost<br /><span className="text-[#e68a4a]">before you bid.</span></h1><p className="mt-4 text-base leading-7 text-slate-600">Estimate the total site value, 25% upfront payment, and registration charges in seconds.</p></div>
+
+        <section className="mb-6 rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm sm:flex sm:items-center sm:gap-4 sm:p-5" aria-labelledby="saved-configurations-title">
+          <div className="mb-3 flex items-start gap-3 sm:mb-0 sm:min-w-0 sm:flex-1"><div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#eef7f5] text-[#12604f]"><Save size={18} /></div><div><h2 id="saved-configurations-title" className="text-sm font-bold text-[#103c52]">Saved site configurations</h2><p className="mt-1 text-xs text-slate-500">Keep separate areas and bid prices ready for your next auction.</p></div></div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center"><label htmlFor="saved-configuration" className="sr-only">Choose a saved site configuration</label><select id="saved-configuration" value={activeConfigurationId} onChange={event => loadConfiguration(event.currentTarget.value)} className="h-11 min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none transition focus:border-[#e68a4a] focus:ring-4 focus:ring-orange-100 sm:min-w-52"><option value="">Choose a saved site</option>{savedConfigurations.map(configuration => <option key={configuration.id} value={configuration.id}>{configuration.name}</option>)}</select><div className="flex gap-2"><button type="button" onClick={saveConfiguration} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[#103c52] px-4 text-sm font-semibold text-white transition hover:bg-[#164c65] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-100 sm:flex-none"><Save size={15} /> Save current</button><button type="button" onClick={deleteConfiguration} disabled={!activeConfigurationId} aria-label="Delete selected saved configuration" className="flex size-11 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-100 disabled:cursor-not-allowed disabled:opacity-40"><Trash2 size={16} /></button></div></div>
+        </section>
 
         <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_12px_40px_rgba(16,60,82,0.06)] sm:p-8">
-            <div className="mb-7 flex items-center justify-between"><div><h2 className="text-lg font-bold text-[#103c52]">Enter auction details</h2><p className="mt-1 text-sm text-slate-500">Use the price quoted per square metre.</p></div><Ruler className="text-[#e68a4a]" size={23} /></div>
+            <div className="mb-7 flex items-center justify-between"><div><h2 className="text-lg font-bold text-[#103c52]">Enter auction details</h2><p className="mt-1 text-sm text-slate-500">Enter values in square metres; we&apos;ll show familiar square feet in the estimate.</p></div><Ruler className="text-[#e68a4a]" size={23} /></div>
             <div className="space-y-5">
-              <Field label="Bid price" hint="per sq. metre" value={price} onChange={setPrice} prefix="₹" />
-              <Field label="Total site area" hint="square metres" value={area} onChange={setArea} prefix="m²" />
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-sm font-semibold text-slate-700">Built-in BDA cost assumptions</p><p className="mt-2 text-xs leading-5 text-slate-500">Includes 1% TDS above ₹50 lakh, 5% stamp duty, 2% registration fee, applicable urban charges, BDA Khata transfer, and ₹80,000 estimated legal / fencing costs.</p></div>
+              <Field label="Bid price" hint="₹ per sq m" value={price} onChange={setPrice} prefix="₹ / sq m" secondary={`${formatINR(result.pricePerSqft)} / sq ft`} secondaryLabel="Displayed for quick reference" step={500} />
+              <Field label="Total site area" hint="in square metres" value={area} onChange={setArea} prefix="sq m" secondary={`${formatNumber(result.areaSqft)} sq ft`} secondaryLabel="Displayed for quick reference" />
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-sm font-semibold text-slate-700">Built-in BDA cost assumptions</p><p className="mt-2 text-xs leading-5 text-slate-500">Includes 1% income-tax TDS, 5% stamp duty, 2% registration fee, applicable urban charges, BDA Khata transfer, and ₹80,000 estimated legal / fencing costs.</p></div>
             </div>
             <div className="mt-7 flex items-start gap-2 rounded-xl bg-[#fff8ef] p-3.5 text-xs leading-5 text-[#8c5b2a]"><CircleHelp size={15} className="mt-0.5 shrink-0" /> Registration rates can vary by property and government notification. This is an estimate, not an official quote.</div>
           </section>
 
-          <section className="rounded-3xl bg-[#103c52] p-6 text-white shadow-[0_16px_50px_rgba(16,60,82,0.2)] sm:p-8">
+          <section className="relative overflow-hidden rounded-3xl bg-[#103c52] p-6 text-white shadow-[0_16px_50px_rgba(16,60,82,0.2)] sm:p-8"><div className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full border-[28px] border-white/5" /><div className="pointer-events-none absolute -bottom-28 -left-20 size-56 rounded-full border-[24px] border-[#e68a4a]/10" />
             <div className="flex items-start justify-between"><div><p className="text-sm font-medium text-[#a9c8d1]">Estimated total site value</p><p className="mt-2 text-4xl font-bold tracking-tight">{formatINR(result.total)}</p></div><div className="rounded-xl bg-white/10 p-3"><IndianRupee size={22} /></div></div>
             <div className="my-8 h-px bg-white/15" />
             <div className="grid gap-4 sm:grid-cols-2"><Metric label="25% upfront to BDA" value={formatINR(result.upfront)} emphasis /><Metric label="Registration & taxes" value={formatINR(result.registrationCharges)} /><Metric label="Area in square feet" value={`${formatNumber(result.areaSqft)} sq ft`} /><Metric label="Rate per square foot" value={`${formatINR(result.pricePerSqft)} / sq ft`} /></div>
@@ -77,17 +145,42 @@ export default function Page() {
             <div className="mt-6 rounded-2xl bg-[#1a5269] p-5"><div className="flex items-center justify-between gap-3"><div><p className="text-sm text-[#b7d2d9]">All-in budget including extras</p><p className="mt-1 text-2xl font-bold">{formatINR(result.allInTotal)}</p></div><ArrowRight className="text-[#f0a467]" size={23} /></div></div>
           </section>
         </div>
-        <div className="mt-8 grid gap-4 text-sm text-slate-500 sm:grid-cols-3"><Info text="1 m² = 10.7639 sq ft" /><Info text="Upfront payment calculated at 25%" /><Info text="All amounts rounded to nearest rupee" /></div>
+        <div className="mt-8 grid gap-4 text-sm text-slate-500 sm:grid-cols-3"><Info text="Inputs use square metres; estimates show square feet" /><Info text="Upfront payment calculated at 25%" /><Info text="All amounts rounded to nearest rupee" /></div>
       </div>
     </main>
   )
 }
 
-function Field({ label, hint, value, onChange, prefix }: { label: string; hint: string; value: string; onChange: (value: string) => void; prefix: string }) {
-  return <div><label className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-700"><span>{label}</span><span className="font-normal text-slate-400">{hint}</span></label><div className="relative"><input id={label === 'Bid price' ? 'price' : 'area'} aria-label={label} type="number" min="0" step="any" value={value} onChange={e => onChange(e.target.value)} className="h-14 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-16 text-lg font-semibold outline-none transition focus:border-[#e68a4a] focus:ring-4 focus:ring-orange-100" /><span className="absolute right-4 top-1/2 -translate-y-1/2 font-semibold text-slate-400">{prefix}</span></div></div>
+function Field({ label, hint, value, onChange, prefix, secondary, secondaryLabel, step }: { label: string; hint: string; value: string; onChange: (value: string) => void; prefix: string; secondary: string; secondaryLabel: string; step?: number }) {
+  const inputId = label === 'Bid price' ? 'price' : 'area'
+  const updateByStep = (direction: 1 | -1) => {
+    const current = Math.max(0, Number(value) || 0)
+    const next = Math.max(0, current + direction * (step ?? 1))
+    onChange(String(next))
+  }
+
+  return <div>
+    <label htmlFor={inputId} className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-700"><span>{label}</span><span className="font-normal text-slate-400">{hint}</span></label>
+    <div className="flex gap-2">
+      {step ? <div className="flex shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm" aria-label={`${label} controls`}>
+        <button type="button" onClick={() => updateByStep(-1)} disabled={!Number(value)} aria-label={`Decrease ${label} by ${formatINR(step)}`} className="flex size-14 items-center justify-center text-slate-500 transition hover:bg-slate-100 hover:text-[#103c52] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-100 disabled:cursor-not-allowed disabled:opacity-40"><Minus size={18} /></button>
+        <div className="w-px bg-slate-200" />
+        <button type="button" onClick={() => updateByStep(1)} aria-label={`Increase ${label} by ${formatINR(step)}`} className="flex size-14 items-center justify-center text-slate-500 transition hover:bg-slate-100 hover:text-[#103c52] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-100"><Plus size={18} /></button>
+      </div> : null}
+      <div className="relative min-w-0 flex-1">
+        <input id={inputId} aria-label={label} role="spinbutton" inputMode="decimal" type="text" min="0" value={value} onChange={e => onChange(e.currentTarget.value.replace(/[^0-9.]/g, ''))} className="h-14 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-20 text-lg font-semibold outline-none transition focus:border-[#e68a4a] focus:ring-4 focus:ring-orange-100" />
+        <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 font-semibold text-slate-400">{prefix}</span>
+      </div>
+    </div>
+    {step ? <p className="mt-2 text-xs text-slate-500">Use + or − to adjust by {formatINR(step)}.</p> : null}
+    <div className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-[#bfe2d8] bg-[#f1faf7] px-3 py-2 text-xs">
+      <span className="font-medium text-[#12604f]">{secondaryLabel}</span>
+      <span className="font-bold text-[#103c52]">{secondary}</span>
+    </div>
+  </div>
 }
 
 function Charge({ label, value }: { label: string; value: number }) { return <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-2 last:border-0 last:pb-0"><span className="text-[#d2e0e4]">{label}</span><span className="font-semibold">{formatINR(value)}</span></div> }
 function Metric({ label, value, emphasis = false }: { label: string; value: string; emphasis?: boolean }) { return <div className={emphasis ? 'rounded-2xl bg-[#e68a4a] p-4 text-[#103c52]' : 'rounded-2xl border border-white/15 p-4'}><p className={emphasis ? 'text-xs font-semibold text-[#74451f]' : 'text-xs text-[#a9c8d1]'}>{label}</p><p className="mt-2 text-xl font-bold">{value}</p></div> }
-function Info({ text }: { text: string }) { return <div className="flex items-center gap-2"><Check size={15} className="text-[#3b927f]" />{text}</div> }
+function Info({ text }: { text: string }) { return <div className="flex items-center gap-2"><Check size={15} className="text-[#3b927f]" /><span suppressHydrationWarning>{text}</span></div> }
 
