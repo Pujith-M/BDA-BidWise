@@ -89,7 +89,7 @@ function Field({ label, hint, value, onChange, prefix, secondary, secondaryLabel
   return <div>
     <label className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-700"><span>{label}</span><span className="font-normal text-slate-400">{hint}</span></label>
     <div className="relative">
-      <input id={label === 'Bid price' ? 'price' : 'area'} aria-label={label} type="number" min="0" step="any" value={value} onChange={e => onChange(e.target.value)} className="h-14 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-20 text-lg font-semibold outline-none transition focus:border-[#e68a4a] focus:ring-4 focus:ring-orange-100" />
+      <input id={label === 'Bid price' ? 'price' : 'area'} aria-label={label} type="number" min="0" step="any" value={value} onInput={e => onChange(e.currentTarget.value)} className="h-14 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-20 text-lg font-semibold outline-none transition focus:border-[#e68a4a] focus:ring-4 focus:ring-orange-100" />
       <span className="absolute right-4 top-1/2 -translate-y-1/2 font-semibold text-slate-400">{prefix}</span>
     </div>
     <div className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-[#bfe2d8] bg-[#f1faf7] px-3 py-2 text-xs">
