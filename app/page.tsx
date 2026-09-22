@@ -101,5 +101,5 @@ function Field({ label, hint, value, onChange, prefix, secondary, secondaryLabel
 
 function Charge({ label, value }: { label: string; value: number }) { return <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-2 last:border-0 last:pb-0"><span className="text-[#d2e0e4]">{label}</span><span className="font-semibold">{formatINR(value)}</span></div> }
 function Metric({ label, value, emphasis = false }: { label: string; value: string; emphasis?: boolean }) { return <div className={emphasis ? 'rounded-2xl bg-[#e68a4a] p-4 text-[#103c52]' : 'rounded-2xl border border-white/15 p-4'}><p className={emphasis ? 'text-xs font-semibold text-[#74451f]' : 'text-xs text-[#a9c8d1]'}>{label}</p><p className="mt-2 text-xl font-bold">{value}</p></div> }
-function Info({ text }: { text: string }) { return <div className="flex items-center gap-2"><Check size={15} className="text-[#3b927f]" />{text}</div> }
+function Info({ text }: { text: string }) { return <div className="flex items-center gap-2"><Check size={15} className="text-[#3b927f]" /><span suppressHydrationWarning>{text}</span></div> }
 
