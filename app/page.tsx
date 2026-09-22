@@ -8,8 +8,8 @@ const formatNumber = (value: number, digits = 2) => new Intl.NumberFormat('en-IN
 const SQFT_PER_SQM = 10.7639
 
 export default function Page() {
-  const [price, setPrice] = useState('50000')
-  const [area, setArea] = useState('100')
+  const [price, setPrice] = useState('70000')
+  const [area, setArea] = useState('216')
   const result = useMemo(() => {
     const pricePerSqm = Math.max(0, Number(price) || 0)
     const areaSqm = Math.max(0, Number(area) || 0)
@@ -43,7 +43,7 @@ export default function Page() {
     }
   }, [price, area])
 
-  const reset = () => { setPrice('4645.15'); setArea('1076.39') }
+  const reset = () => { setPrice('70000'); setArea('216') }
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,_#fff4e8_0,_transparent_34%),linear-gradient(135deg,_#f5f7fb_0%,_#eef5f4_100%)] text-slate-950">
