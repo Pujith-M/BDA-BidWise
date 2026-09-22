@@ -64,8 +64,8 @@ export default function Page() {
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_12px_40px_rgba(16,60,82,0.06)] sm:p-8">
             <div className="mb-7 flex items-center justify-between"><div><h2 className="text-lg font-bold text-[#103c52]">Enter auction details</h2><p className="mt-1 text-sm text-slate-500">Enter values in square metres; we&apos;ll show familiar square feet in the estimate.</p></div><Ruler className="text-[#e68a4a]" size={23} /></div>
             <div className="space-y-5">
-              <Field label="Bid price" hint="₹ per sq m" value={price} onChange={setPrice} prefix="₹ / sq m" />
-              <Field label="Total site area" hint="in square metres" value={area} onChange={setArea} prefix="sq m" />
+              <Field label="Bid price" hint="₹ per sq m" value={price} onChange={setPrice} prefix="₹ / sq m" secondary={`${formatINR(result.pricePerSqft)} / sq ft`} secondaryLabel="Displayed for quick reference" />
+              <Field label="Total site area" hint="in square metres" value={area} onChange={setArea} prefix="sq m" secondary={`${formatNumber(result.areaSqft)} sq ft`} secondaryLabel="Displayed for quick reference" />
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-sm font-semibold text-slate-700">Built-in BDA cost assumptions</p><p className="mt-2 text-xs leading-5 text-slate-500">Includes 1% income-tax TDS, 5% stamp duty, 2% registration fee, applicable urban charges, BDA Khata transfer, and ₹80,000 estimated legal / fencing costs.</p></div>
             </div>
             <div className="mt-7 flex items-start gap-2 rounded-xl bg-[#fff8ef] p-3.5 text-xs leading-5 text-[#8c5b2a]"><CircleHelp size={15} className="mt-0.5 shrink-0" /> Registration rates can vary by property and government notification. This is an estimate, not an official quote.</div>
@@ -85,8 +85,18 @@ export default function Page() {
   )
 }
 
-function Field({ label, hint, value, onChange, prefix }: { label: string; hint: string; value: string; onChange: (value: string) => void; prefix: string }) {
-  return <div><label className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-700"><span>{label}</span><span className="font-normal text-slate-400">{hint}</span></label><div className="relative"><input id={label === 'Bid price' ? 'price' : 'area'} aria-label={label} type="number" min="0" step="any" value={value} onChange={e => onChange(e.target.value)} className="h-14 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-16 text-lg font-semibold outline-none transition focus:border-[#e68a4a] focus:ring-4 focus:ring-orange-100" /><span className="absolute right-4 top-1/2 -translate-y-1/2 font-semibold text-slate-400">{prefix}</span></div></div>
+function Field({ label, hint, value, onChange, prefix, secondary, secondaryLabel }: { label: string; hint: string; value: string; onChange: (value: string) => void; prefix: string; secondary: string; secondaryLabel: string }) {
+  return <div>
+    <label className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-700"><span>{label}</span><span className="font-normal text-slate-400">{hint}</span></label>
+    <div className="relative">
+      <input id={label === 'Bid price' ? 'price' : 'area'} aria-label={label} type="number" min="0" step="any" value={value} onChange={e => onChange(e.target.value)} className="h-14 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-20 text-lg font-semibold outline-none transition focus:border-[#e68a4a] focus:ring-4 focus:ring-orange-100" />
+      <span className="absolute right-4 top-1/2 -translate-y-1/2 font-semibold text-slate-400">{prefix}</span>
+    </div>
+    <div className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-[#bfe2d8] bg-[#f1faf7] px-3 py-2 text-xs">
+      <span className="font-medium text-[#12604f]">{secondaryLabel}</span>
+      <span className="font-bold text-[#103c52]">{secondary}</span>
+    </div>
+  </div>
 }
 
 function Charge({ label, value }: { label: string; value: number }) { return <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-2 last:border-0 last:pb-0"><span className="text-[#d2e0e4]">{label}</span><span className="font-semibold">{formatINR(value)}</span></div> }
