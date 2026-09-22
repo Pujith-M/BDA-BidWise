@@ -13,7 +13,7 @@ export default function Page() {
     const pricePerSqft = Math.max(0, Number(price) || 0)
     const areaSqft = Math.max(0, Number(area) || 0)
     const total = pricePerSqft * areaSqft
-    const incomeTaxTds = total >= 5000000 ? total * 0.01 : 0
+    const incomeTaxTds = total * 0.01
     const stampDuty = total * 0.05
     const registrationFee = total * 0.02
     const urbanCess = stampDuty * 0.1
@@ -43,11 +43,11 @@ export default function Page() {
   const reset = () => { setPrice('4645.15'); setArea('1076.39') }
 
   return (
-    <main className="min-h-screen bg-[#f5f7fb] text-slate-950">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_right,_#fff4e8_0,_transparent_34%),linear-gradient(135deg,_#f5f7fb_0%,_#eef5f4_100%)] text-slate-950">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 lg:px-8">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-[#103c52] text-white shadow-sm"><Calculator size={20} /></div>
+            <div className="relative flex size-10 items-center justify-center rounded-xl bg-[#103c52] text-white shadow-[0_8px_18px_rgba(16,60,82,0.2)]"><Calculator size={20} /><span className="absolute -right-1 -top-1 size-2.5 rounded-full bg-[#e68a4a] ring-2 ring-white" /></div>
             <div><p className="text-[15px] font-bold tracking-tight">BDA BidWise</p><p className="text-xs text-slate-500">Auction cost calculator</p></div>
           </div>
           <button onClick={reset} className="flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-[#103c52]"><RotateCcw size={15} /> Reset</button>
@@ -55,20 +55,20 @@ export default function Page() {
       </header>
 
       <div className="mx-auto max-w-6xl px-5 py-10 lg:px-8 lg:py-14">
-        <div className="mb-10 max-w-2xl"><div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#dff3ee] px-3 py-1.5 text-xs font-semibold text-[#12604f]"><ShieldCheck size={14} /> Plan your bid with confidence</div><h1 className="text-4xl font-bold tracking-[-0.04em] text-[#103c52] sm:text-5xl">Know your true site cost<br /><span className="text-[#e68a4a]">before you bid.</span></h1><p className="mt-4 text-base leading-7 text-slate-600">Estimate the total site value, 25% upfront payment, and registration charges in seconds.</p></div>
+        <div className="mb-10 max-w-2xl"><div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#bfe2d8] bg-white/75 px-3 py-1.5 text-xs font-semibold text-[#12604f] shadow-sm"><ShieldCheck size={14} /> Plan your bid with confidence</div><h1 className="text-4xl font-bold tracking-[-0.04em] text-[#103c52] sm:text-5xl">Know your true site cost<br /><span className="text-[#e68a4a]">before you bid.</span></h1><p className="mt-4 text-base leading-7 text-slate-600">Estimate the total site value, 25% upfront payment, and registration charges in seconds.</p></div>
 
         <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_12px_40px_rgba(16,60,82,0.06)] sm:p-8">
             <div className="mb-7 flex items-center justify-between"><div><h2 className="text-lg font-bold text-[#103c52]">Enter auction details</h2><p className="mt-1 text-sm text-slate-500">Enter the auction details in square feet.</p></div><Ruler className="text-[#e68a4a]" size={23} /></div>
             <div className="space-y-5">
-              <Field label="Bid price" hint="per sq. ft" value={price} onChange={setPrice} prefix="₹" />
-              <Field label="Total site area" hint="square feet" value={area} onChange={setArea} prefix="sq ft" />
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-sm font-semibold text-slate-700">Built-in BDA cost assumptions</p><p className="mt-2 text-xs leading-5 text-slate-500">Includes 1% TDS at or above ₹50 lakh, 5% stamp duty, 2% registration fee, applicable urban charges, BDA Khata transfer, and ₹80,000 estimated legal / fencing costs.</p></div>
+              <Field label="Bid price" hint="₹ per sq ft" value={price} onChange={setPrice} prefix="₹ / sq ft" />
+              <Field label="Total site area" hint="in square feet" value={area} onChange={setArea} prefix="sq ft" />
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-sm font-semibold text-slate-700">Built-in BDA cost assumptions</p><p className="mt-2 text-xs leading-5 text-slate-500">Includes 1% income-tax TDS, 5% stamp duty, 2% registration fee, applicable urban charges, BDA Khata transfer, and ₹80,000 estimated legal / fencing costs.</p></div>
             </div>
             <div className="mt-7 flex items-start gap-2 rounded-xl bg-[#fff8ef] p-3.5 text-xs leading-5 text-[#8c5b2a]"><CircleHelp size={15} className="mt-0.5 shrink-0" /> Registration rates can vary by property and government notification. This is an estimate, not an official quote.</div>
           </section>
 
-          <section className="rounded-3xl bg-[#103c52] p-6 text-white shadow-[0_16px_50px_rgba(16,60,82,0.2)] sm:p-8">
+          <section className="relative overflow-hidden rounded-3xl bg-[#103c52] p-6 text-white shadow-[0_16px_50px_rgba(16,60,82,0.2)] sm:p-8"><div className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full border-[28px] border-white/5" /><div className="pointer-events-none absolute -bottom-28 -left-20 size-56 rounded-full border-[24px] border-[#e68a4a]/10" />
             <div className="flex items-start justify-between"><div><p className="text-sm font-medium text-[#a9c8d1]">Estimated total site value</p><p className="mt-2 text-4xl font-bold tracking-tight">{formatINR(result.total)}</p></div><div className="rounded-xl bg-white/10 p-3"><IndianRupee size={22} /></div></div>
             <div className="my-8 h-px bg-white/15" />
             <div className="grid gap-4 sm:grid-cols-2"><Metric label="25% upfront to BDA" value={formatINR(result.upfront)} emphasis /><Metric label="Registration & taxes" value={formatINR(result.registrationCharges)} /><Metric label="Area in square feet" value={`${formatNumber(result.areaSqft)} sq ft`} /><Metric label="Rate per square foot" value={`${formatINR(result.pricePerSqft)} / sq ft`} /></div>
