@@ -3,18 +3,17 @@
 import { useMemo, useState } from 'react'
 import { ArrowRight, Calculator, Check, CircleHelp, IndianRupee, RotateCcw, Ruler, ShieldCheck } from 'lucide-react'
 
-const SQM_TO_SQFT = 10.7639
 const formatINR = (value: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value || 0)
 const formatNumber = (value: number, digits = 2) => new Intl.NumberFormat('en-IN', { maximumFractionDigits: digits }).format(value || 0)
 
 export default function Page() {
-  const [price, setPrice] = useState('50000')
-  const [area, setArea] = useState('100')
+  const [price, setPrice] = useState('4645.15')
+  const [area, setArea] = useState('1076.39')
   const result = useMemo(() => {
-    const pricePerSqm = Math.max(0, Number(price) || 0)
-    const areaSqm = Math.max(0, Number(area) || 0)
-    const total = pricePerSqm * areaSqm
-    const incomeTaxTds = total > 5000000 ? total * 0.01 : 0
+    const pricePerSqft = Math.max(0, Number(price) || 0)
+    const areaSqft = Math.max(0, Number(area) || 0)
+    const total = pricePerSqft * areaSqft
+    const incomeTaxTds = total >= 5000000 ? total * 0.01 : 0
     const stampDuty = total * 0.05
     const registrationFee = total * 0.02
     const urbanCess = stampDuty * 0.1
@@ -24,8 +23,8 @@ export default function Page() {
     const registrationCharges = incomeTaxTds + stampDuty + registrationFee + urbanCess + urbanSurcharge + khataTransfer
     const additionalCharges = registrationCharges + hiddenCosts
     return {
-      areaSqft: areaSqm * SQM_TO_SQFT,
-      pricePerSqft: pricePerSqm / SQM_TO_SQFT,
+      areaSqft,
+      pricePerSqft,
       total,
       upfront: total * 0.25,
       incomeTaxTds,
@@ -41,7 +40,7 @@ export default function Page() {
     }
   }, [price, area])
 
-  const reset = () => { setPrice('50000'); setArea('100') }
+  const reset = () => { setPrice('4645.15'); setArea('1076.39') }
 
   return (
     <main className="min-h-screen bg-[#f5f7fb] text-slate-950">
@@ -60,11 +59,11 @@ export default function Page() {
 
         <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_12px_40px_rgba(16,60,82,0.06)] sm:p-8">
-            <div className="mb-7 flex items-center justify-between"><div><h2 className="text-lg font-bold text-[#103c52]">Enter auction details</h2><p className="mt-1 text-sm text-slate-500">Use the price quoted per square metre.</p></div><Ruler className="text-[#e68a4a]" size={23} /></div>
+            <div className="mb-7 flex items-center justify-between"><div><h2 className="text-lg font-bold text-[#103c52]">Enter auction details</h2><p className="mt-1 text-sm text-slate-500">Enter the auction details in square feet.</p></div><Ruler className="text-[#e68a4a]" size={23} /></div>
             <div className="space-y-5">
-              <Field label="Bid price" hint="per sq. metre" value={price} onChange={setPrice} prefix="₹" />
-              <Field label="Total site area" hint="square metres" value={area} onChange={setArea} prefix="m²" />
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-sm font-semibold text-slate-700">Built-in BDA cost assumptions</p><p className="mt-2 text-xs leading-5 text-slate-500">Includes 1% TDS above ₹50 lakh, 5% stamp duty, 2% registration fee, applicable urban charges, BDA Khata transfer, and ₹80,000 estimated legal / fencing costs.</p></div>
+              <Field label="Bid price" hint="per sq. ft" value={price} onChange={setPrice} prefix="₹" />
+              <Field label="Total site area" hint="square feet" value={area} onChange={setArea} prefix="sq ft" />
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-sm font-semibold text-slate-700">Built-in BDA cost assumptions</p><p className="mt-2 text-xs leading-5 text-slate-500">Includes 1% TDS at or above ₹50 lakh, 5% stamp duty, 2% registration fee, applicable urban charges, BDA Khata transfer, and ₹80,000 estimated legal / fencing costs.</p></div>
             </div>
             <div className="mt-7 flex items-start gap-2 rounded-xl bg-[#fff8ef] p-3.5 text-xs leading-5 text-[#8c5b2a]"><CircleHelp size={15} className="mt-0.5 shrink-0" /> Registration rates can vary by property and government notification. This is an estimate, not an official quote.</div>
           </section>
@@ -77,7 +76,7 @@ export default function Page() {
             <div className="mt-6 rounded-2xl bg-[#1a5269] p-5"><div className="flex items-center justify-between gap-3"><div><p className="text-sm text-[#b7d2d9]">All-in budget including extras</p><p className="mt-1 text-2xl font-bold">{formatINR(result.allInTotal)}</p></div><ArrowRight className="text-[#f0a467]" size={23} /></div></div>
           </section>
         </div>
-        <div className="mt-8 grid gap-4 text-sm text-slate-500 sm:grid-cols-3"><Info text="1 m² = 10.7639 sq ft" /><Info text="Upfront payment calculated at 25%" /><Info text="All amounts rounded to nearest rupee" /></div>
+        <div className="mt-8 grid gap-4 text-sm text-slate-500 sm:grid-cols-3"><Info text="All area and price inputs use square feet" /><Info text="Upfront payment calculated at 25%" /><Info text="All amounts rounded to nearest rupee" /></div>
       </div>
     </main>
   )
