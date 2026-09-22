@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowRight, Calculator, Check, CircleHelp, IndianRupee, Minus, Plus, RotateCcw, Ruler, Save, ShieldCheck, Trash2 } from 'lucide-react'
+import { ArrowRight, Calculator, Check, CircleHelp, IndianRupee, Link, Minus, Plus, RotateCcw, Ruler, Save, ShieldCheck, Trash2 } from 'lucide-react'
 
 const formatINR = (value: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value || 0)
 const formatNumber = (value: number, digits = 2) => new Intl.NumberFormat('en-IN', { maximumFractionDigits: digits }).format(value || 0)
@@ -20,8 +20,18 @@ export default function Page() {
   const [area, setArea] = useState('216')
   const [savedConfigurations, setSavedConfigurations] = useState<SavedConfiguration[]>([])
   const [activeConfigurationId, setActiveConfigurationId] = useState('')
+  const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle')
+  const [sharedConfigurationName, setSharedConfigurationName] = useState('')
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const sharedPrice = params.get('price')
+    const sharedArea = params.get('area')
+    const sharedName = params.get('name')?.trim() ?? ''
+    if (sharedPrice && Number.isFinite(Number(sharedPrice)) && Number(sharedPrice) >= 0) setPrice(sharedPrice)
+    if (sharedArea && Number.isFinite(Number(sharedArea)) && Number(sharedArea) >= 0) setArea(sharedArea)
+    if (sharedName) setSharedConfigurationName(sharedName)
+
     try {
       const stored = window.localStorage.getItem(SAVED_CONFIGS_KEY)
       if (!stored) return
@@ -38,7 +48,8 @@ export default function Page() {
   }
 
   const saveConfiguration = () => {
-    const name = window.prompt('Name this site configuration')?.trim()
+    const suggestedName = sharedConfigurationName || undefined
+    const name = window.prompt('Name this site configuration', suggestedName)?.trim()
     if (!name) return
 
     const existing = savedConfigurations.find(configuration => configuration.name.toLowerCase() === name.toLowerCase())
@@ -54,6 +65,7 @@ export default function Page() {
 
     persistConfigurations(nextConfigurations)
     setActiveConfigurationId(configuration.id)
+    setSharedConfigurationName(name)
   }
 
   const loadConfiguration = (id: string) => {
@@ -71,6 +83,22 @@ export default function Page() {
     persistConfigurations(savedConfigurations.filter(item => item.id !== activeConfigurationId))
     setActiveConfigurationId('')
   }
+
+  const shareConfiguration = async () => {
+    const params = new URLSearchParams({ price, area })
+    const activeConfiguration = savedConfigurations.find(item => item.id === activeConfigurationId)
+    if (activeConfiguration) params.set('name', activeConfiguration.name)
+    const shareUrl = `${window.location.origin}${window.location.pathname}?${params.toString()}`
+
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+    } catch {
+      window.prompt('Copy this shareable link', shareUrl)
+    }
+    setShareStatus('copied')
+    window.setTimeout(() => setShareStatus('idle'), 2200)
+  }
+
   const result = useMemo(() => {
     const pricePerSqm = Math.max(0, Number(price) || 0)
     const areaSqm = Math.max(0, Number(area) || 0)
@@ -122,8 +150,8 @@ export default function Page() {
         <div className="mb-10 max-w-2xl"><div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#bfe2d8] bg-white/75 px-3 py-1.5 text-xs font-semibold text-[#12604f] shadow-sm"><ShieldCheck size={14} /> Plan your bid with confidence</div><h1 className="text-4xl font-bold tracking-[-0.04em] text-[#103c52] sm:text-5xl">Know your true site cost<br /><span className="text-[#e68a4a]">before you bid.</span></h1><p className="mt-4 text-base leading-7 text-slate-600">Estimate the total site value, 25% upfront payment, and registration charges in seconds.</p></div>
 
         <section className="mb-6 rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm sm:flex sm:items-center sm:gap-4 sm:p-5" aria-labelledby="saved-configurations-title">
-          <div className="mb-3 flex items-start gap-3 sm:mb-0 sm:min-w-0 sm:flex-1"><div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#eef7f5] text-[#12604f]"><Save size={18} /></div><div><h2 id="saved-configurations-title" className="text-sm font-bold text-[#103c52]">Saved site configurations</h2><p className="mt-1 text-xs text-slate-500">Keep separate areas and bid prices ready for your next auction.</p></div></div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center"><label htmlFor="saved-configuration" className="sr-only">Choose a saved site configuration</label><select id="saved-configuration" value={activeConfigurationId} onChange={event => loadConfiguration(event.currentTarget.value)} className="h-11 min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none transition focus:border-[#e68a4a] focus:ring-4 focus:ring-orange-100 sm:min-w-52"><option value="">Choose a saved site</option>{savedConfigurations.map(configuration => <option key={configuration.id} value={configuration.id}>{configuration.name}</option>)}</select><div className="flex gap-2"><button type="button" onClick={saveConfiguration} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[#103c52] px-4 text-sm font-semibold text-white transition hover:bg-[#164c65] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-100 sm:flex-none"><Save size={15} /> Save current</button><button type="button" onClick={deleteConfiguration} disabled={!activeConfigurationId} aria-label="Delete selected saved configuration" className="flex size-11 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-100 disabled:cursor-not-allowed disabled:opacity-40"><Trash2 size={16} /></button></div></div>
+          <div className="mb-3 flex items-start gap-3 sm:mb-0 sm:min-w-0 sm:flex-1"><div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#eef7f5] text-[#12604f]"><Save size={18} /></div><div><h2 id="saved-configurations-title" className="text-sm font-bold text-[#103c52]">Saved site configurations</h2><p className="mt-1 text-xs text-slate-500">Keep separate areas and bid prices ready for your next auction.</p>{sharedConfigurationName ? <p className="mt-2 inline-flex max-w-full items-center rounded-full border border-[#bfe2d8] bg-[#f1faf7] px-2.5 py-1 text-[11px] font-semibold text-[#12604f]">Shared site: <span className="ml-1 truncate">{sharedConfigurationName}</span></p> : null}</div></div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center"><label htmlFor="saved-configuration" className="sr-only">Choose a saved site configuration</label><select id="saved-configuration" value={activeConfigurationId} onChange={event => loadConfiguration(event.currentTarget.value)} className="h-11 min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 outline-none transition focus:border-[#e68a4a] focus:ring-4 focus:ring-orange-100 sm:min-w-52"><option value="">Choose a saved site</option>{savedConfigurations.map(configuration => <option key={configuration.id} value={configuration.id}>{configuration.name}</option>)}</select><div className="flex flex-wrap gap-2"><button type="button" onClick={saveConfiguration} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[#103c52] px-4 text-sm font-semibold text-white transition hover:bg-[#164c65] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-100 sm:flex-none"><Save size={15} /> Save current</button><button type="button" onClick={shareConfiguration} className="flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border border-[#bfe2d8] bg-[#f1faf7] px-4 text-sm font-semibold text-[#12604f] transition hover:bg-[#e4f5ef] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-100 sm:flex-none">{shareStatus === 'copied' ? <Check size={15} /> : <Link size={15} />} {shareStatus === 'copied' ? 'Link copied' : 'Share link'}</button><button type="button" onClick={deleteConfiguration} disabled={!activeConfigurationId} aria-label="Delete selected saved configuration" className="flex size-11 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-100 disabled:cursor-not-allowed disabled:opacity-40"><Trash2 size={16} /></button></div></div>
         </section>
 
         <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
