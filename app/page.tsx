@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { ArrowRight, Calculator, Check, CircleHelp, IndianRupee, RotateCcw, Ruler, ShieldCheck } from 'lucide-react'
+import { ArrowRight, Calculator, Check, CircleHelp, IndianRupee, Minus, Plus, RotateCcw, Ruler, ShieldCheck } from 'lucide-react'
 
 const formatINR = (value: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value || 0)
 const formatNumber = (value: number, digits = 2) => new Intl.NumberFormat('en-IN', { maximumFractionDigits: digits }).format(value || 0)
@@ -64,7 +64,7 @@ export default function Page() {
           <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_12px_40px_rgba(16,60,82,0.06)] sm:p-8">
             <div className="mb-7 flex items-center justify-between"><div><h2 className="text-lg font-bold text-[#103c52]">Enter auction details</h2><p className="mt-1 text-sm text-slate-500">Enter values in square metres; we&apos;ll show familiar square feet in the estimate.</p></div><Ruler className="text-[#e68a4a]" size={23} /></div>
             <div className="space-y-5">
-              <Field label="Bid price" hint="₹ per sq m" value={price} onChange={setPrice} prefix="₹ / sq m" secondary={`${formatINR(result.pricePerSqft)} / sq ft`} secondaryLabel="Displayed for quick reference" />
+              <Field label="Bid price" hint="₹ per sq m" value={price} onChange={setPrice} prefix="₹ / sq m" secondary={`${formatINR(result.pricePerSqft)} / sq ft`} secondaryLabel="Displayed for quick reference" step={500} />
               <Field label="Total site area" hint="in square metres" value={area} onChange={setArea} prefix="sq m" secondary={`${formatNumber(result.areaSqft)} sq ft`} secondaryLabel="Displayed for quick reference" />
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><p className="text-sm font-semibold text-slate-700">Built-in BDA cost assumptions</p><p className="mt-2 text-xs leading-5 text-slate-500">Includes 1% income-tax TDS, 5% stamp duty, 2% registration fee, applicable urban charges, BDA Khata transfer, and ₹80,000 estimated legal / fencing costs.</p></div>
             </div>
@@ -85,13 +85,28 @@ export default function Page() {
   )
 }
 
-function Field({ label, hint, value, onChange, prefix, secondary, secondaryLabel }: { label: string; hint: string; value: string; onChange: (value: string) => void; prefix: string; secondary: string; secondaryLabel: string }) {
+function Field({ label, hint, value, onChange, prefix, secondary, secondaryLabel, step }: { label: string; hint: string; value: string; onChange: (value: string) => void; prefix: string; secondary: string; secondaryLabel: string; step?: number }) {
+  const inputId = label === 'Bid price' ? 'price' : 'area'
+  const updateByStep = (direction: 1 | -1) => {
+    const current = Math.max(0, Number(value) || 0)
+    const next = Math.max(0, current + direction * (step ?? 1))
+    onChange(String(next))
+  }
+
   return <div>
-    <label className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-700"><span>{label}</span><span className="font-normal text-slate-400">{hint}</span></label>
-    <div className="relative">
-      <input id={label === 'Bid price' ? 'price' : 'area'} aria-label={label} type="number" min="0" step="any" value={value} onInput={e => onChange(e.currentTarget.value)} className="h-14 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-20 text-lg font-semibold outline-none transition focus:border-[#e68a4a] focus:ring-4 focus:ring-orange-100" />
-      <span className="absolute right-4 top-1/2 -translate-y-1/2 font-semibold text-slate-400">{prefix}</span>
+    <label htmlFor={inputId} className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-700"><span>{label}</span><span className="font-normal text-slate-400">{hint}</span></label>
+    <div className="flex gap-2">
+      {step ? <div className="flex shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm" aria-label={`${label} controls`}>
+        <button type="button" onClick={() => updateByStep(-1)} disabled={!Number(value)} aria-label={`Decrease ${label} by ${formatINR(step)}`} className="flex size-14 items-center justify-center text-slate-500 transition hover:bg-slate-100 hover:text-[#103c52] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-100 disabled:cursor-not-allowed disabled:opacity-40"><Minus size={18} /></button>
+        <div className="w-px bg-slate-200" />
+        <button type="button" onClick={() => updateByStep(1)} aria-label={`Increase ${label} by ${formatINR(step)}`} className="flex size-14 items-center justify-center text-slate-500 transition hover:bg-slate-100 hover:text-[#103c52] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-100"><Plus size={18} /></button>
+      </div> : null}
+      <div className="relative min-w-0 flex-1">
+        <input id={inputId} aria-label={label} role="spinbutton" inputMode="decimal" type="text" min="0" value={value} onChange={e => onChange(e.currentTarget.value.replace(/[^0-9.]/g, ''))} className="h-14 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 pr-20 text-lg font-semibold outline-none transition focus:border-[#e68a4a] focus:ring-4 focus:ring-orange-100" />
+        <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 font-semibold text-slate-400">{prefix}</span>
+      </div>
     </div>
+    {step ? <p className="mt-2 text-xs text-slate-500">Use + or − to adjust by {formatINR(step)}.</p> : null}
     <div className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-[#bfe2d8] bg-[#f1faf7] px-3 py-2 text-xs">
       <span className="font-medium text-[#12604f]">{secondaryLabel}</span>
       <span className="font-bold text-[#103c52]">{secondary}</span>
