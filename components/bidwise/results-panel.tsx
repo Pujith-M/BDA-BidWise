@@ -1,74 +1,30 @@
-import { ArrowRight, IndianRupee } from 'lucide-react'
-import { Charge, Metric } from './field'
+'use client'
+
+import { useState } from 'react'
+import { ArrowRight, IndianRupee, Minus, Pencil, Plus } from 'lucide-react'
+import { Charge } from './field'
 import { formatINR, formatNumber, type CalculatorResult } from '@/lib/calculator'
 
-export function ResultsPanel({ result }: { result: CalculatorResult }) {
-  return (
-    <section className="relative overflow-hidden rounded-3xl bg-[#103c52] p-6 text-white shadow-[0_16px_50px_rgba(16,60,82,0.2)] sm:p-8">
-      <div className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full border-[28px] border-white/5" />
-      <div className="pointer-events-none absolute -bottom-28 -left-20 size-56 rounded-full border-[24px] border-[#e68a4a]/10" />
+type ResultsPanelProps = { result: CalculatorResult; price: string; area: string; onPriceChange: (value: string) => void; onAreaChange: (value: string) => void }
 
-      <div className="relative">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-sm font-medium text-[#a9c8d1]">Estimated total site value</p>
-            <p className="mt-2 text-4xl font-bold tracking-tight">{formatINR(result.total)}</p>
-          </div>
-          <div className="rounded-xl bg-white/10 p-3"><IndianRupee size={22} /></div>
-        </div>
-
-        <div className="my-8 h-px bg-white/15" />
-
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Plot details</h2>
-          <span className="text-xs text-[#a9c8d1]">from your inputs</span>
-        </div>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <Metric label="Area in square feet" value={`${formatNumber(result.areaSqft)} sq ft`} />
-          <Metric label="Rate per square foot" value={formatINR(result.pricePerSqft)} />
-        </div>
-
-        <div className="my-8 h-px bg-white/15" />
-
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Price breakdown</h2>
-          <span className="text-xs text-[#a9c8d1]">estimated costs</span>
-        </div>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <Metric label="25% upfront to BDA" value={formatINR(result.upfront)} emphasis />
-          <Metric label="Registration & taxes" value={formatINR(result.registrationCharges)} />
-        </div>
-
-        <div className="mt-6 rounded-2xl border border-white/15 p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm font-semibold text-[#b7d2d9]">Additional cost details</p>
-            <span className="text-xs text-[#a9c8d1]">estimate</span>
-          </div>
-          <div className="grid gap-3 text-sm sm:grid-cols-2">
-            <Charge label="Income tax TDS (1%)" value={result.incomeTaxTds} format={formatINR} />
-            <Charge label="Stamp duty (5%)" value={result.stampDuty} format={formatINR} />
-            <Charge label="Registration fee (2%)" value={result.registrationFee} format={formatINR} />
-            <Charge label="Urban cess (0.5%)" value={result.urbanCess} format={formatINR} />
-            <Charge label="Urban surcharge (0.1%)" value={result.urbanSurcharge} format={formatINR} />
-            <Charge label="BDA Khata transfer (0.1%)" value={result.khataTransfer} format={formatINR} />
-            <Charge label="Legal / fencing estimate" value={result.hiddenCosts} format={formatINR} />
-          </div>
-        </div>
-
-        <div className="mt-6 rounded-2xl bg-[#1a5269] p-5">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-semibold text-[#b7d2d9]">Estimated all-in cost</p>
-              <p className="mt-1 text-xs text-[#a9c8d1]">Site value plus charges and estimates</p>
-            </div>
-            <p className="text-2xl font-bold">{formatINR(result.allInTotal)}</p>
-          </div>
-          <div className="mt-4 flex items-center gap-2 text-xs font-medium text-[#f3b487]">
-            <ArrowRight size={14} /> Keep this figure in mind when setting your bid limit.
-          </div>
-        </div>
-      </div>
-    </section>
-  )
+function EditDialog({ label, value, onSave, onClose }: { label: string; value: string; onSave: (value: string) => void; onClose: () => void }) {
+  const [draft, setDraft] = useState(value)
+  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-5" role="presentation" onMouseDown={onClose}>
+    <div className="w-full max-w-sm rounded-2xl bg-white p-5 text-slate-950 shadow-2xl" role="dialog" aria-modal="true" aria-labelledby="edit-value-title" onMouseDown={event => event.stopPropagation()}>
+      <h2 id="edit-value-title" className="text-lg font-semibold">Edit {label}</h2>
+      <p className="mt-1 text-sm text-slate-500">Enter the value in square metres.</p>
+      <input autoFocus inputMode="decimal" value={draft} onChange={event => setDraft(event.target.value.replace(/[^0-9.]/g, ''))} className="mt-4 w-full rounded-xl border border-slate-200 px-4 py-3 text-lg outline-none ring-[#103c52] focus:ring-2" aria-label={label} />
+      <div className="mt-5 flex justify-end gap-2"><button type="button" onClick={onClose} className="rounded-xl px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100">Cancel</button><button type="button" onClick={() => { onSave(draft); onClose() }} className="rounded-xl bg-[#103c52] px-4 py-2 text-sm font-semibold text-white hover:bg-[#164d66]">Save</button></div>
+    </div>
+  </div>
 }
 
+function EditableMetric({ label, primary, secondary, onDecrease, onIncrease, onEdit }: { label: string; primary: string; secondary: string; onDecrease: () => void; onIncrease: () => void; onEdit: () => void }) {
+  return <div className="rounded-2xl border border-white/15 p-4"><div className="flex items-start justify-between gap-3"><div><p className="text-xs text-[#a9c8d1]">{label}</p><p className="mt-2 text-xl font-bold">{primary}</p><p className="mt-1 text-xs text-[#a9c8d1]">{secondary}</p></div><button type="button" onClick={onEdit} className="rounded-lg p-2 text-[#b7d2d9] hover:bg-white/10 hover:text-white" aria-label={`Edit ${label}`}><Pencil size={15} /></button></div><div className="mt-4 flex items-center gap-2"><button type="button" onClick={onDecrease} className="flex size-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20" aria-label={`Decrease ${label}`}><Minus size={15} /></button><button type="button" onClick={onIncrease} className="flex size-8 items-center justify-center rounded-lg bg-white/10 text-white hover:bg-white/20" aria-label={`Increase ${label}`}><Plus size={15} /></button><span className="ml-1 text-[11px] text-[#a9c8d1]">Adjust value</span></div></div>
+}
+
+export function ResultsPanel({ result, price, area, onPriceChange, onAreaChange }: ResultsPanelProps) {
+  const [editing, setEditing] = useState<'area' | 'price' | null>(null)
+  const adjust = (value: string, delta: number) => String(Math.max(0, (Number(value) || 0) + delta))
+  return <section className="relative overflow-hidden rounded-3xl bg-[#103c52] p-5 text-white shadow-[0_16px_50px_rgba(16,60,82,0.2)] sm:p-8"><div className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full border-[28px] border-white/5" /><div className="pointer-events-none absolute -bottom-28 -left-20 size-56 rounded-full border-[24px] border-[#e68a4a]/10" /><div className="relative"><div className="flex items-start justify-between"><div><p className="text-sm font-medium text-[#a9c8d1]">Estimated total site value</p><p className="mt-2 text-4xl font-bold tracking-tight">{formatINR(result.total)}</p></div><div className="rounded-xl bg-white/10 p-3"><IndianRupee size={22} /></div></div><div className="my-8 h-px bg-white/15" /><div className="flex items-center justify-between"><h2 className="text-lg font-semibold">Plot details</h2><span className="text-xs text-[#a9c8d1]">tap edit for exact value</span></div><div className="mt-4 grid gap-4 sm:grid-cols-2"><EditableMetric label="Plot area" primary={`${formatNumber(Number(area))} sq m`} secondary={`${formatNumber(result.areaSqft)} sq ft`} onDecrease={() => onAreaChange(adjust(area, -1))} onIncrease={() => onAreaChange(adjust(area, 1))} onEdit={() => setEditing('area')} /><EditableMetric label="Rate" primary={`${formatINR(Number(price))} / sq m`} secondary={`${formatINR(result.pricePerSqft)} / sq ft`} onDecrease={() => onPriceChange(adjust(price, -500))} onIncrease={() => onPriceChange(adjust(price, 500))} onEdit={() => setEditing('price')} /></div><div className="my-8 h-px bg-white/15" /><div className="flex items-center justify-between"><h2 className="text-lg font-semibold">Price breakdown</h2><span className="text-xs text-[#a9c8d1]">estimated costs</span></div><div className="mt-4 grid gap-4 sm:grid-cols-2"><div className="rounded-2xl border border-white/15 p-4"><p className="text-xs text-[#a9c8d1]">25% upfront to BDA</p><p className="mt-2 text-xl font-bold">{formatINR(result.upfront)}</p></div><div className="rounded-2xl border border-white/15 p-4"><p className="text-xs text-[#a9c8d1]">Registration & taxes</p><p className="mt-2 text-xl font-bold">{formatINR(result.registrationCharges)}</p></div></div><div className="mt-6 rounded-2xl border border-white/15 p-5"><div className="mb-4 flex items-center justify-between"><p className="text-sm font-semibold text-[#b7d2d9]">Additional cost details</p><span className="text-xs text-[#a9c8d1]">estimate</span></div><div className="grid gap-3 text-sm sm:grid-cols-2"><Charge label="Income tax TDS (1%)" value={result.incomeTaxTds} format={formatINR} /><Charge label="Stamp duty (5%)" value={result.stampDuty} format={formatINR} /><Charge label="Registration fee (2%)" value={result.registrationFee} format={formatINR} /><Charge label="Urban cess (0.5%)" value={result.urbanCess} format={formatINR} /><Charge label="Urban surcharge (0.1%)" value={result.urbanSurcharge} format={formatINR} /><Charge label="BDA Khata transfer (0.1%)" value={result.khataTransfer} format={formatINR} /><Charge label="Legal / fencing estimate" value={result.hiddenCosts} format={formatINR} /></div></div><div className="mt-6 rounded-2xl bg-[#1a5269] p-5"><div className="flex items-center justify-between gap-3"><div><p className="text-sm font-semibold text-[#b7d2d9]">Estimated all-in cost</p><p className="mt-1 text-xs text-[#a9c8d1]">Site value plus charges and estimates</p></div><p className="text-2xl font-bold">{formatINR(result.allInTotal)}</p></div><div className="mt-4 flex items-center gap-2 text-xs font-medium text-[#f3b487]"><ArrowRight size={14} /> Keep this figure in mind when setting your bid limit.</div></div></div>{editing === 'area' && <EditDialog label="plot area" value={area} onSave={onAreaChange} onClose={() => setEditing(null)} />}{editing === 'price' && <EditDialog label="rate" value={price} onSave={onPriceChange} onClose={() => setEditing(null)} />}</section>
+}
