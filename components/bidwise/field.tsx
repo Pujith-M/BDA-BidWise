@@ -10,9 +10,9 @@ export function Field({ label, hint, value, onChange, prefix, secondary, seconda
   const updateByStep = (direction: 1 | -1) => onChange(String(Math.max(0, (Number(value) || 0) + direction * (step ?? 1))))
 
   return <div>
-    <label htmlFor={inputId} className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-700"><span>{label}</span><span className="font-normal text-slate-400">{hint}</span></label>
+    <label htmlFor={inputId} className="mb-2 flex items-center justify-between text-sm font-semibold text-foreground"><span>{label}</span><span className="font-normal text-slate-400">{hint}</span></label>
     <div className="flex gap-2">
-      {step ? <div className="flex shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm" aria-label={`${label} controls`}>
+      {step ? <div className="flex shrink-0 overflow-hidden rounded-xl border border-border bg-muted shadow-sm" aria-label={`${label} controls`}>
         <button type="button" onClick={() => updateByStep(-1)} disabled={!Number(value)} aria-label={`Decrease ${label} by ${formatINR(step)}`} className="flex size-14 items-center justify-center text-slate-500 transition hover:bg-slate-100 hover:text-[#103c52] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-100 disabled:cursor-not-allowed disabled:opacity-40"><Minus size={18} /></button>
         <div className="w-px bg-slate-200" />
         <button type="button" onClick={() => updateByStep(1)} aria-label={`Increase ${label} by ${formatINR(step)}`} className="flex size-14 items-center justify-center text-slate-500 transition hover:bg-slate-100 hover:text-[#103c52] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-orange-100"><Plus size={18} /></button>
