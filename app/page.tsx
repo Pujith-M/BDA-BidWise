@@ -37,7 +37,7 @@ export default function Page() {
     persist(existing ? savedConfigurations.map(item => item.id === existing.id ? configuration : item) : [...savedConfigurations, configuration])
     setActiveConfigurationId(configuration.id); setSharedConfigurationName(name)
   }
-  const loadConfiguration = (id: string) => { const item = savedConfigurations.find(configuration => configuration.id === id); if (item) { setPrice(item.price); setArea(item.area); setActiveConfigurationId(id) } }
+  const loadConfiguration = (id: string) => { if (!id) { setActiveConfigurationId(''); return }; const item = savedConfigurations.find(configuration => configuration.id === id); if (item) { setPrice(item.price); setArea(item.area); setActiveConfigurationId(id) } }
   const deleteConfiguration = () => { const item = savedConfigurations.find(configuration => configuration.id === activeConfigurationId); if (!item || !window.confirm(`Delete “${item.name}”?`)) return; persist(savedConfigurations.filter(configuration => configuration.id !== activeConfigurationId)); setActiveConfigurationId('') }
   const shareConfiguration = async () => {
     const params = new URLSearchParams({ price, area })
