@@ -5,10 +5,12 @@ import { ArrowUpRight, BarChart3, Calculator, Check, ChevronDown, Download, Info
 import { calculateBid, DEFAULT_AREA, DEFAULT_PRICE, formatINR, formatNumber, SQFT_PER_SQM } from '@/lib/calculator'
 
 const presets = [
-  { label: '20 × 30 ft', sqft: 600, sqm: 55.7 },
-  { label: '30 × 40 ft', sqft: 1200, sqm: 111.48 },
-  { label: '40 × 60 ft', sqft: 2400, sqm: 222.96 },
-  { label: '50 × 80 ft', sqft: 4000, sqm: 371.61 },
+  { label: '6 × 9 m', sqm: 54, sqft: 581, note: 'Common EWS' },
+  { label: '9 × 12 m', sqm: 108, sqft: 1163, note: 'Most common' },
+  { label: '12 × 18 m', sqm: 216, sqft: 2325, note: 'Very common' },
+  { label: '15 × 24 m', sqm: 360, sqft: 3875, note: 'Larger standard' },
+  { label: '9 × 15 m', sqm: 135, sqft: 1453, note: 'Also used' },
+  { label: '18 × 12 m', sqm: 216, sqft: 2325, note: 'Orientation reversed' },
 ]
 
 function Metric({ label, value, caption, accent }: { label: string; value: string; caption: string; accent: 'emerald' | 'amber' | 'blue' }) {
@@ -35,7 +37,7 @@ export default function Page() {
   const changePrice = (amount: number) => setPrice(String(Math.max(0, Number(price) + amount)))
   const copyLink = async () => { await navigator.clipboard?.writeText(`${window.location.origin}?area=${area}&price=${price}`); setCopied(true); setTimeout(() => setCopied(false), 1800) }
 
-  const rows = [
+  const rows: [string, string, number, string][] = [
     ['Base Bid Value', `${formatNumber(result.areaSqft)} sq.ft × ${formatINR(result.pricePerSqft)}`, total, 'Area × Bid Rate'],
     ['Stamp Duty', '5.6% of Base Value', result.stampDuty, 'Karnataka stamp duty incl. cess'],
     ['Registration Fee', '1.0% of Base Value', result.registrationFee, 'Registration charge estimate'],
