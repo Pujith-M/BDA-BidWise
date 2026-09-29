@@ -67,4 +67,33 @@
   table td { @apply border-t border-border/60 px-5 py-4; }
 }
 
-@media (max-width: 640px) { .toolbar-button { @apply px-2; } .toolbar-button { font-size: 0; } .toolbar-button svg { @apply size-4; } }
+@media (max-width: 640px) {
+  .header-inner { @apply items-start gap-4 px-4 py-4; }
+  .brand-lockup { @apply min-w-0; }
+  .brand-lockup > div:last-child { @apply min-w-0; }
+  .brand-lockup p { @apply truncate; }
+  .toolbar-actions { @apply w-full gap-2; }
+  .toolbar-button { @apply size-10 justify-center px-0; font-size: 0; }
+  .toolbar-button svg { @apply size-4; }
+  .page-shell { @apply min-w-0 px-4 py-6; }
+  .page-shell > .grid { @apply min-w-0; }
+  .page-shell > .grid > * { @apply min-w-0; }
+  .hero-section { @apply gap-4; }
+  .hero-section h2 { @apply text-[2rem] leading-[1.08]; }
+  .hero-section > div:last-child { @apply text-[11px]; }
+  .preset-chip { @apply px-3 py-2; }
+  .panel, .metric-card { @apply rounded-xl p-4; }
+  .panel-heading { @apply mb-5; }
+  .big-input { @apply py-3 text-lg; }
+  .stepper { @apply py-2.5; }
+  .timeline { @apply mt-6 gap-6; }
+  .timeline-item { @apply grid grid-cols-[4.5rem_1fr] items-baseline gap-x-3; }
+  .timeline-dot { @apply row-span-2 mb-0 mt-1; }
+  .timeline-item > p:nth-of-type(1) { @apply col-start-2; }
+  .timeline-item > p:nth-of-type(2) { @apply col-start-2 mt-1; }
+  .timeline-item > p:nth-of-type(3) { @apply col-start-2; }
+  .distribution { @apply mt-5; }
+  table { @apply min-w-[620px]; }
+  table th, table td { @apply px-4; }
+  footer { @apply flex-col items-start gap-2; }
+}

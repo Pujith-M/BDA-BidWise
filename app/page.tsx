@@ -48,13 +48,13 @@ export default function Page() {
 
   return <main className="min-h-screen bg-background text-foreground">
     <header className="border-b border-border/70 bg-slate-950/80 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-6 py-5">
-        <div className="flex items-center gap-3"><div className="brand-mark"><Calculator /></div><div><h1 className="text-base font-semibold tracking-tight">BDA BidWise</h1><p className="text-xs text-slate-500">BDA Site Cost & Auction Calculator</p></div></div>
-        <div className="flex flex-wrap items-center gap-2"><button className="toolbar-button"><Download /> Export Summary</button><button onClick={copyLink} className="toolbar-button">{copied ? <Check /> : <Link2 />} {copied ? 'Copied' : 'Copy Shareable Link'}</button></div>
+      <div className="header-inner mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-6 py-5">
+        <div className="brand-lockup flex items-center gap-3"><div className="brand-mark"><Calculator /></div><div><h1 className="text-base font-semibold tracking-tight">BDA BidWise</h1><p className="text-xs text-slate-500">BDA Site Cost & Auction Calculator</p></div></div>
+        <div className="toolbar-actions flex flex-wrap items-center gap-2"><button className="toolbar-button"><Download /> Export Summary</button><button onClick={copyLink} className="toolbar-button">{copied ? <Check /> : <Link2 />} {copied ? 'Copied' : 'Copy Shareable Link'}</button></div>
       </div>
     </header>
-    <div className="mx-auto max-w-7xl px-6 py-8">
-      <div className="mb-7 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"><div><div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] font-medium text-emerald-300"><Sparkles /> Live estimate</div><h2 className="text-3xl font-semibold tracking-[-0.04em] text-slate-100 sm:text-4xl">Model the true cost of your bid.</h2><p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">Turn auction terms into a clear payment plan with Karnataka statutory charges accounted for.</p></div><div className="flex items-center gap-2 text-xs text-slate-500"><ShieldCheck className="text-emerald-400" /> Estimates update instantly as you bid</div></div>
+    <div className="page-shell mx-auto max-w-7xl px-6 py-8">
+      <div className="hero-section mb-7 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"><div><div className="mb-3 inline-flex items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-[11px] font-medium text-emerald-300"><Sparkles /> Live estimate</div><h2 className="text-3xl font-semibold tracking-[-0.04em] text-slate-100 sm:text-4xl">Model the true cost of your bid.</h2><p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">Turn auction terms into a clear payment plan with Karnataka statutory charges accounted for.</p></div><div className="flex items-center gap-2 text-xs text-slate-500"><ShieldCheck className="text-emerald-400" /> Estimates update instantly as you bid</div></div>
       <div className="mb-7 flex gap-2 overflow-x-auto pb-1">{presets.map((preset) => <button key={preset.label} onClick={() => setArea(String((preset.sqm).toFixed(2)))} className="preset-chip"><span>{preset.label}</span><span className="text-slate-500">{formatNumber(preset.sqft, 0)} sq.ft</span></button>)}</div>
       <div className="grid gap-6 xl:grid-cols-[minmax(280px,0.72fr)_minmax(0,1.65fr)]">
         <aside className="flex flex-col gap-5">
