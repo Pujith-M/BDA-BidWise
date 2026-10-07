@@ -35,7 +35,7 @@ export default function Page() {
   const feePercent = registration / result.allInTotal * 100
   const fixedPercent = (result.hiddenCosts + result.incomeTaxTds) / result.allInTotal * 100
   const changePrice = (amount: number) => setPrice(String(Math.max(0, Number(price) + amount)))
-  const copyLink = async () => { await navigator.clipboard?.writeText(`https://bda-bidwise.vercel.app?area=${area}&price=${price}`); setCopied(true); setTimeout(() => setCopied(false), 1800) }
+  const copyLink = async () => { await navigator.clipboard?.writeText(`${window.location.origin}?area=${area}&price=${price}`); setCopied(true); setTimeout(() => setCopied(false), 1800) }
 
   const rows: [string, string, number, string][] = [
     ['Base Bid Value', `${formatNumber(result.area)} sq.m × ${formatINR(result.pricePerSqm)}`, total, 'Area × Bid Rate'],
