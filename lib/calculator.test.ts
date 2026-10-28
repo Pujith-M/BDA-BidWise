@@ -23,6 +23,7 @@ describe('calculateBid', () => {
 
     expect(result.areaSqft).toBeCloseTo(216 * SQFT_PER_SQM, 8)
     expect(result.pricePerSqft).toBeCloseTo(70000 / SQFT_PER_SQM, 8)
+    expect(result.netPricePerSqft).toBeCloseTo((15120000 + result.additionalCharges) / (216 * SQFT_PER_SQM), 8)
     expect(result.total).toBe(15120000)
     expect(result.upfront).toBe(3780000)
   })
@@ -45,6 +46,7 @@ describe('calculateBid', () => {
     expect(result.total).toBe(0)
     expect(result.areaSqft).toBe(0)
     expect(result.pricePerSqft).toBe(0)
+    expect(result.netPricePerSqft).toBe(0)
     expect(result.allInTotal).toBe(80000)
   })
 })

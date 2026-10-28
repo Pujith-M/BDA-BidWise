@@ -6,6 +6,7 @@ export const PRICE_STEP = 500
 export type CalculatorResult = {
   areaSqft: number
   pricePerSqft: number
+  netPricePerSqft: number
   total: number
   upfront: number
   incomeTaxTds: number
@@ -44,7 +45,10 @@ export function calculateBid(priceInput: string, areaInput: string): CalculatorR
   const registrationCharges = incomeTaxTds + stampDuty + registrationFee + urbanCess + urbanSurcharge + khataTransfer
   const additionalCharges = registrationCharges + hiddenCosts
 
-  return { areaSqft, pricePerSqft, total, upfront: total * 0.25, incomeTaxTds, stampDuty, registrationFee, urbanCess, urbanSurcharge, khataTransfer, hiddenCosts, registrationCharges, additionalCharges, allInTotal: total + additionalCharges }
+  const allInTotal = total + additionalCharges
+  const netPricePerSqft = areaSqft > 0 ? allInTotal / areaSqft : 0
+
+  return { areaSqft, pricePerSqft, netPricePerSqft, total, upfront: total * 0.25, incomeTaxTds, stampDuty, registrationFee, urbanCess, urbanSurcharge, khataTransfer, hiddenCosts, registrationCharges, additionalCharges, allInTotal }
 }
 
 export function sanitizeNumericInput(value: string) {
