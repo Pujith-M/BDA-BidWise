@@ -3,9 +3,12 @@ export const DEFAULT_PRICE = '70000'
 export const DEFAULT_AREA = '216'
 export const PRICE_STEP = 500
 
+export type AdditionalCharge = { id: string; label: string; amount: number }
+
 export type CalculatorResult = {
   areaSqft: number
   pricePerSqft: number
+  netPricePerSqft: number
   total: number
   upfront: number
   incomeTaxTds: number
@@ -28,7 +31,7 @@ export function formatNumber(value: number, digits = 2) {
   return new Intl.NumberFormat('en-IN', { maximumFractionDigits: digits }).format(value || 0)
 }
 
-export function calculateBid(priceInput: string, areaInput: string): CalculatorResult {
+export function calculateBid(priceInput: string, areaInput: string, customCharges: AdditionalCharge[] = []): CalculatorResult {
   const pricePerSqm = Math.max(0, Number(priceInput) || 0)
   const areaSqm = Math.max(0, Number(areaInput) || 0)
   const areaSqft = areaSqm * SQFT_PER_SQM
@@ -42,9 +45,13 @@ export function calculateBid(priceInput: string, areaInput: string): CalculatorR
   const khataTransfer = stampDuty * 0.02
   const hiddenCosts = 80000
   const registrationCharges = incomeTaxTds + stampDuty + registrationFee + urbanCess + urbanSurcharge + khataTransfer
-  const additionalCharges = registrationCharges + hiddenCosts
+  const customChargesTotal = customCharges.reduce((sum, charge) => sum + charge.amount, 0)
+  const additionalCharges = registrationCharges + hiddenCosts + customChargesTotal
 
-  return { areaSqft, pricePerSqft, total, upfront: total * 0.25, incomeTaxTds, stampDuty, registrationFee, urbanCess, urbanSurcharge, khataTransfer, hiddenCosts, registrationCharges, additionalCharges, allInTotal: total + additionalCharges }
+  const allInTotal = total + additionalCharges
+  const netPricePerSqft = areaSqft > 0 ? allInTotal / areaSqft : 0
+
+  return { areaSqft, pricePerSqft, netPricePerSqft, total, upfront: total * 0.25, incomeTaxTds, stampDuty, registrationFee, urbanCess, urbanSurcharge, khataTransfer, hiddenCosts, registrationCharges, additionalCharges, allInTotal }
 }
 
 export function sanitizeNumericInput(value: string) {
